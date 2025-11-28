@@ -160,9 +160,9 @@ public class RTPCommand {
             ServerWorld world = settings.getWorld();
             if (world == null) return null;
             for (int i = 0; i < RTPSettings.getMaxAttempts(); i++) {
-                int x = settings.getRandomIntInBounds();
+                int x = settings.getCenterX() + settings.getRandomIntInBounds();
                 int y;
-                int z = settings.getRandomIntInBounds();
+                int z = settings.getCenterZ() + settings.getRandomIntInBounds();
                 if (settings.allowCaveTeleports()) {
                     y = (int) TeleportUtil.findNextBelow(world, x, RandomHelper.randomIntBetween(-64, settings.getHighestY()), z);
                 } else {
