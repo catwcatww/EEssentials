@@ -9,6 +9,8 @@ import net.minecraft.server.world.ServerWorld;
 
 public final class RTPWorldSettings {
     private final String worldName;
+    private final int centerX;
+    private final int centerZ;
     private final int minDistance;
     private final int maxDistance;
     private final int cooldown;
@@ -17,6 +19,8 @@ public final class RTPWorldSettings {
 
     public RTPWorldSettings(String worldName, Configuration worldConfig) {
         this.worldName = worldName;
+        this.centerX = worldConfig.getInt("Center-X", 0);
+        this.centerZ = worldConfig.getInt("Center-Z", 0);
         this.minDistance = worldConfig.getInt("Min-Distance", 250);
         this.maxDistance = worldConfig.getInt("Max-Distance", 5000);
         this.cooldown = worldConfig.getInt("Cooldown", 30);
@@ -46,6 +50,14 @@ public final class RTPWorldSettings {
 
     public int getHighestY() {
         return highestY;
+    }
+
+    public int getCenterX(){
+        return centerX;
+    }
+
+    public int getCenterZ(){
+        return centerZ;
     }
 
     public ServerWorld getWorld() {

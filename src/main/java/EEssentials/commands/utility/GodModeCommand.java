@@ -1,18 +1,15 @@
 package EEssentials.commands.utility;
 
 import EEssentials.lang.LangManager;
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -36,53 +33,60 @@ public class GodModeCommand {
         dispatcher.register(
                 literal("god")
                         .requires(Permissions.require(GOD_SELF_PERMISSION_NODE, 2))
-                        .executes(ctx -> toggleGodMode(ctx))
-                        .then(argument("target", EntityArgumentType.player())
-                                .requires(Permissions.require(GOD_OTHER_PERMISSION_NODE, 2))
-                                .suggests((ctx, builder) -> CommandSource.suggestMatching(ctx.getSource().getServer().getPlayerNames(), builder))
-                                .executes(ctx -> {
-                                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "target");
-                                    return toggleGodMode(ctx, target);
-                                }))
-        );
+                        .executes(context -> {
+                            ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
+                            boolean enabled = toggleGod(null, player);
+                            if (enabled) LangManager.send(context.getSource(), "God-Mode-Enabled");
+                            else LangManager.send(context.getSource(), "God-Mode-Disabled");
+                            return Command.SINGLE_SUCCESS;
+                        }).then(argument("target", EntityArgumentType.players())
+                                .requires(Permissions.require(GOD_OTHER_PERMISSION_NODE, 4))
+                                .executes(context -> {
+                                    Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "target");
+                                    players.forEach(player -> {
+                                        boolean enabled = toggleGod(null, player);
+                                        if (enabled) LangManager.send(player, "God-Mode-Enabled");
+                                        else LangManager.send(player, "God-Mode-Disabled");
+                                    });
+                                    if (players.size() == 1) {
+                                        ServerPlayerEntity first = players.iterator().next();
+                                        if (first.getAbilities().invulnerable) LangManager.send(context.getSource(), "God-Mode-Other-Enabled", Map.of("{player}", first.getName().getString()));
+                                        else LangManager.send(context.getSource(), "God-Mode-Other-Disabled", Map.of("{player}", first.getName().getString()));
+                                    } else LangManager.send(context.getSource(), "God-Mode-All", Map.of("{amount}", String.valueOf(players.size())));
+
+                                    return Command.SINGLE_SUCCESS;
+                                }).then(argument("state", BoolArgumentType.bool())
+                                        .executes(context -> {
+                                            boolean state = BoolArgumentType.getBool(context, "state");
+                                            ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
+
+                                            boolean enabled = toggleGod(state, player);
+                                            if (enabled) LangManager.send(context.getSource(), "God-Mode-Enabled");
+                                            else LangManager.send(context.getSource(), "God-Mode-Disabled");
+
+                                            return Command.SINGLE_SUCCESS;
+                                        })
+                                )
+                        ));
     }
 
     /**
-     * Toggles god mode for the target player.
+     * Toggles God mode for the target player.
      *
-     * @param ctx The command context.
-     * @param targets The target players.
-     * @return 1 if successful, 0 otherwise.
+     * @param targets the target players.
+     * @return true if god mode is enabled after toggling, false otherwise.
      */
-    private static int toggleGodMode(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity... targets) {
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = targets.length > 0 ? targets[0] : source.getPlayer();
+    // ToDo: Move toggles to player data (this is for Seam, sorry EEssentials)
+    private static boolean toggleGod(Boolean toggleState, ServerPlayerEntity... targets) {
+        for (ServerPlayerEntity target : targets) {
+            boolean currentState = target.getAbilities().invulnerable;
+            boolean updatedState = (toggleState == null) ? !currentState : toggleState;
 
-        if (player == null) return 0;
+            target.getAbilities().invulnerable = updatedState;
+            target.sendAbilitiesUpdate();
 
-        UUID playerId = player.getUuid();
-        boolean isGodMode = godModePlayers.contains(playerId);
-
-        if (isGodMode) {
-            godModePlayers.remove(playerId);
-            player.getAbilities().invulnerable = false;
-            player.sendAbilitiesUpdate();
-            LangManager.send(player, "God-Mode-Disabled");
-
-            if (!player.equals(source.getPlayer())) {
-                LangManager.send(source, "God-Mode-Other-Disabled", Map.of("{player}", player.getName().getString()));
-            }
-        } else {
-            godModePlayers.add(playerId);
-            player.getAbilities().invulnerable = true;
-            player.sendAbilitiesUpdate();
-            LangManager.send(player, "God-Mode-Enabled");
-
-            if (!player.equals(source.getPlayer())) {
-                LangManager.send(source, "God-Mode-Other-Enabled", Map.of("{player}", player.getName().getString()));
-            }
+            return updatedState;
         }
-
-        return 1;
+        return false;
     }
 }

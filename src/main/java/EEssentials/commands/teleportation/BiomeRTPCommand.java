@@ -118,9 +118,9 @@ public class BiomeRTPCommand {
             }
             RegistryKey<Biome> biomeKey = RegistryKey.of(RegistryKeys.BIOME, Identifier.of(biomeName));
             for (int i = 0; i< RTPSettings.getMaxAttempts(); i++) {
-                int x = settings.getRandomIntInBounds();
+                int x = settings.getCenterX() + settings.getRandomIntInBounds();
                 int y = 60;
-                int z = settings.getRandomIntInBounds();
+                int z = settings.getCenterZ() + settings.getRandomIntInBounds();
                 BlockPos biomePos = findBiome(world, new BlockPos(x, y, z), biomeKey);
                 if (biomePos == null) continue;
                 x = biomePos.getX();

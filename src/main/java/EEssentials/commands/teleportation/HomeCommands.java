@@ -43,6 +43,13 @@ public class HomeCommands {
         // Set a new home or overwrite an existing one for the player.
         dispatcher.register(literal("sethome")
                 .requires(src -> Permissions.check(src, SET_HOME_PERMISSION_NODE, 2))
+                .executes(ctx -> {
+                    ServerPlayerEntity player = ctx.getSource().getPlayer();
+                    if (player != null) {
+                        LangManager.send(player, "Home-Specify-Name");
+                    }
+                    return 0;
+                })
                 .then(argument("name", StringArgumentType.word())
                         .executes(ctx -> {
                             ServerPlayerEntity player = ctx.getSource().getPlayer();

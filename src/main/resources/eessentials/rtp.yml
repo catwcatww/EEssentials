@@ -5,6 +5,11 @@ Random-Teleport:
   # How many attempts the plugin will take to find a safe location for a player to teleport to before giving up.
   Worlds:
     "minecraft:overworld":
+      # The Center of your world. All RTP settings will revolve around this central coordinate.
+      # Most servers will center their world at x=0, z=0, but if your server spawn is elsewhere
+      # feel free to adjust those here. Defaults: x=0, z=0
+      Center-X: 0
+      Center-Z: 0
       # Any worlds not here will automatically be blacklisted. Case sensitive.
       Min-Distance: 250
       # The minimum distance from 0, 0 the random location must be.

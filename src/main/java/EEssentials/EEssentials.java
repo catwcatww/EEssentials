@@ -386,7 +386,6 @@ public class EEssentials implements ModInitializer {
         LOGGER.info(" | |____| |____\\__ \\__ \\  __/ | | | |_| | (_| | \\__ \\");
         LOGGER.info(" |______|______|___/___/\\___|_| |_|\\__|_|\\__,_|_|___/");
         LOGGER.info("                                                      ");
-        LOGGER.info("                                                      ");
     }
 
     /**
