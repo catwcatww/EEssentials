@@ -372,6 +372,26 @@ public class EEssentials implements ModInitializer {
             if (!motdComponent.equals(Component.text(""))) {
                 handler.player.sendMessage(motdComponent);
             }
+            // Auto-apply fly and god on join if player has permission
+            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+            scheduler.schedule(() -> {
+                server.execute(() -> {
+                    net.minecraft.server.network.ServerPlayerEntity player = handler.player;
+                    if (player == null || player.isDisconnected()) return;
+
+                    if (mainConfig.getBoolean("Commands.fly", true)
+                            && me.lucko.fabric.api.permissions.v0.Permissions.check(player, FlyCommand.FLY_SELF_PERMISSION_NODE, 2)) {
+                        player.getAbilities().allowFlying = true;
+                        player.sendAbilitiesUpdate();
+                    }
+
+                    if (mainConfig.getBoolean("Commands.godmode", true)
+                            && me.lucko.fabric.api.permissions.v0.Permissions.check(player, GodModeCommand.GOD_SELF_PERMISSION_NODE, 2)) {
+                        player.getAbilities().invulnerable = true;
+                        player.sendAbilitiesUpdate();
+                    }
+                });
+            }, 2, TimeUnit.SECONDS);
         });
     }
 

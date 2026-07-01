@@ -66,8 +66,17 @@ public class TeleportUtil {
             blockID = Registries.BLOCK.getId(world.getBlockState(new BlockPos((int) x, (int) loopY, (int) z)).getBlock()).toString();
             loopY--;
         } while (airBlocks.contains(blockID) && loopY > -64);
-        if (isBlockSafe(blockID)) {
-            return loopY + 2;
-        } else return -1000D;
+
+        if (!isBlockSafe(blockID)) return -1000D;
+
+        double standingY = loopY + 2;
+        String headBlock1 = Registries.BLOCK.getId(world.getBlockState(new BlockPos((int) x, (int) standingY, (int) z)).getBlock()).toString();
+        String headBlock2 = Registries.BLOCK.getId(world.getBlockState(new BlockPos((int) x, (int) standingY + 1, (int) z)).getBlock()).toString();
+
+        if (airBlocks.contains(headBlock1) && airBlocks.contains(headBlock2)) {
+            return standingY;
+        } else {
+            return -1000D;
+        }
     }
 }
