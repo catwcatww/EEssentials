@@ -173,7 +173,7 @@ public class RTPCommand {
                     if (optionalBiome.isPresent()) {
                         String biomeKey = optionalBiome.get().getValue().toString();
                         if (!RTPSettings.isBiomeBlacklisted(biomeKey)) {
-                            return new Location(world, x, y, z);
+                            return new Location(world, x + 0.5, y, z + 0.5);
                         }
                     }
                 }
